@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPE Detection System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f1ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8e9ff;
+            transform: scale(1.02);
+        }
+
+        .upload-area p {
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .upload-area .icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-info p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-container.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            animation: progress 2s ease-in-out infinite;
+        }
+
+        @keyframes progress {
+            0% { width: 0%; }
+            50% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .result-image {
+            max-width: 100%;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        .statistics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-box h4 {
+            color: #667eea;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-box .value {
+            font-size: 1.8em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .detections-list {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .detection-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border-left: 3px solid #667eea;
+        }
+
+        .detection-item span {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-helmet {
+            background: #28a745;
+        }
+
+        .badge-vest {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .badge-boots {
+            background: #dc3545;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            .statistics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛡️ PPE Detection System</h1>
+            <p>Real-time Personal Protective Equipment Detection using YOLOv3</p>
+        </header>
+
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('image', this)">Image Detection</button>
+            <button class="tab-btn" onclick="switchTab('video', this)">Video Detection</button>
+            <button class="tab-btn" onclick="switchTab('info', this)">System Info</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Image Detection Tab -->
+            <div id="image" class="tab-content active">
+                <div class="card">
+                    <h2>Image Detection</h2>
+                    <div class="upload-area" id="imageUploadArea" onclick="document.getElementById('imageFile').click()">
+                        <div class="icon">📸</div>
+                        <p>Click to upload or drag and drop</p>
+                        <p style="font-size: 0.9em;">PNG, JPG up to 100MB</p>
+                    </div>
+                    <input type="file" id="imageFile" accept="image/*">
+                    
+                    <div class="file-info" id="imageFileInfo">
+                        <p>Selected file: <strong id="imageFileName"></strong></p>
+                        <p>Size: <strong id="imageFileSize"></strong></p>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-primary" id="detectImageBtn" onclick="detectImage()">Detect PPE</button>
+                        <button class="btn-secondary" onclick="clearImage()">Clear</button>
+                    </div>
+
+                    <div class="progress-container" id="imageProgress">
+                        <p style="color: #667eea; font-weight: 600;">Processing...</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="error" id="imageError"></div>
+                    <div class="success" id="imageSuccess"></div>
+                </div>
+            </div>
+
+            <!-- Video Detection Tab -->
+            <div id="video" class="tab-content">
+                <div class="card">
+                    <h2>Video Detection</h2>
+                    <div class="upload-area" id="videoUploadArea" onclick="document.getElementById('videoFile').click()">
+                        <div class="icon">🎬</div>
+                        <p>Click to upload or drag and drop</p>
+                        <p style="font-size: 0.9em;">MP4, AVI, MOV up to 100MB</p>
+                    </div>
+                    <input type="file" id="videoFile" accept="video/*">
+                    
+                    <div class="file-info" id="videoFileInfo">
+                        <p>Selected file: <strong id="videoFileName"></strong></p>
+                        <p>Size: <strong id="videoFileSize"></strong></p>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn-primary" id="detectVideoBtn" onclick="detectVideo()">Process Video</button>
+                        <button class="btn-secondary" onclick="clearVideo()">Clear</button>
+                    </div>
+
+                    <div class="progress-container" id="videoProgress">
+                        <p style="color: #667eea; font-weight: 600;">Processing...</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="error" id="videoError"></div>
+                    <div class="success" id="videoSuccess"></div>
+                </div>
+            </div>
+
+            <!-- System Info Tab -->
+            <div id="info" class="tab-content">
+                <div class="card">
+                    <h2>System Information</h2>
+                    <div id="systemInfo" style="margin-top: 20px;">
+                        <div class="stat-box" style="margin-bottom: 15px;">
+                            <h4>Status</h4>
+                            <div class="value" id="systemStatus">Loading...</div>
+                        </div>
+                        <div class="stat-box" style="margin-bottom: 15px;">
+                            <h4>Processing Device</h4>
+                            <div class="value" id="systemDevice">Loading...</div>
+                        </div>
+                        <div class="stat-box" style="margin-bottom: 15px;">
+                            <h4>Model</h4>
+                            <div class="value" id="systemModel">Loading...</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Detected Classes</h4>
+                            <div id="systemClasses" style="color: #333; font-size: 1.1em; margin-top: 10px;">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Display -->
+            <div class="card">
+                <h2>Detection Results</h2>
+                <div class="results" id="imageResults">
+                    <img id="resultImage" class="result-image" alt="Detection result">
+                    
+                    <div class="statistics" id="statistics">
+                        <div class="stat-box">
+                            <h4>Total Detections</h4>
+                            <div class="value" id="totalDetections">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Helmets Detected</h4>
+                            <div class="value" id="helmetCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Vests Detected</h4>
+                            <div class="value" id="vestCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Boots Detected</h4>
+                            <div class="value" id="bootsCount">0</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 15px;">
+                        <h4 style="color: #667eea;">Confidence (Average)</h4>
+                        <div style="font-size: 1.3em; font-weight: bold; color: #333;" id="avgConfidence">0%</div>
+                    </div>
+
+                    <div class="detections-list" id="detectionsList"></div>
+
+                    <button class="btn-primary" style="width: 100%; margin-top: 15px;" id="downloadResultBtn" onclick="downloadResult()">Download Result</button>
+                </div>
+
+                <div class="results" id="videoResults">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">Video Processing Complete!</h3>
+                    
+                    <div class="statistics" id="videoStatistics">
+                        <div class="stat-box">
+                            <h4>Frames Processed</h4>
+                            <div class="value" id="framesProcessed">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Total Detections</h4>
+                            <div class="value" id="videoTotalDetections">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Helmets Detected</h4>
+                            <div class="value" id="videoHelmetCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Vests Detected</h4>
+                            <div class="value" id="videoVestCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Boots Detected</h4>
+                            <div class="value" id="videoBootsCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4>Avg Confidence</h4>
+                            <div class="value" id="videoAvgConfidence">0%</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="width: 100%; margin-top: 15px;" id="downloadVideoBtn" onclick="downloadVideo()">Download Video</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🛡️ PPE Detection System | Powered by PyTorch & YOLOv3</p>
+        </div>
+    </div>
+
+    <script>
+        let currentImageFile = null;
+        let currentVideoFile = null;
+        let currentImageOutput = null;
+        let currentVideoOutput = null;
+
+        // Drag and drop for images
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageFile = document.getElementById('imageFile');
+
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.add('dragover');
+        });
+
+        imageUploadArea.addEventListener('dragleave', () => {
+            imageUploadArea.classList.remove('dragover');
+        });
+
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                imageFile.files = files;
+                handleImageSelection();
+            }
+        });
+
+        imageFile.addEventListener('change', handleImageSelection);
+
+        function handleImageSelection() {
+            const file = imageFile.files[0];
+            if (file) {
+                currentImageFile = file;
+                document.getElementById('imageFileName').textContent = file.name;
+                document.getElementById('imageFileSize').textContent = formatFileSize(file.size);
+                document.getElementById('imageFileInfo').classList.add('show');
+                clearImageError();
+                clearImageSuccess();
+                document.getElementById('imageResults').classList.remove('show');
+            }
+        }
+
+        // Drag and drop for videos
+        const videoUploadArea = document.getElementById('videoUploadArea');
+        const videoFile = document.getElementById('videoFile');
+
+        videoUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            videoUploadArea.classList.add('dragover');
+        });
+
+        videoUploadArea.addEventListener('dragleave', () => {
+            videoUploadArea.classList.remove('dragover');
+        });
+
+        videoUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            videoUploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                videoFile.files = files;
+                handleVideoSelection();
+            }
+        });
+
+        videoFile.addEventListener('change', handleVideoSelection);
+
+        function handleVideoSelection() {
+            const file = videoFile.files[0];
+            if (file) {
+                currentVideoFile = file;
+                document.getElementById('videoFileName').textContent = file.name;
+                document.getElementById('videoFileSize').textContent = formatFileSize(file.size);
+                document.getElementById('videoFileInfo').classList.add('show');
+                clearVideoError();
+                clearVideoSuccess();
+                document.getElementById('videoResults').classList.remove('show');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        async function detectImage() {
+            if (!currentImageFile) {
+                showImageError('Please select an image first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', currentImageFile);
+
+            document.getElementById('detectImageBtn').disabled = true;
+            document.getElementById('imageProgress').classList.add('show');
+            clearImageError();
+            clearImageSuccess();
+
+            try {
+                const response = await fetch('/api/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    displayImageResults(data);
+                    showImageSuccess('Detection completed successfully!');
+                } else {
+                    showImageError(data.error || 'Detection failed');
+                }
+            } catch (error) {
+                showImageError('Error: ' + error.message);
+            } finally {
+                document.getElementById('imageProgress').classList.remove('show');
+                document.getElementById('detectImageBtn').disabled = false;
+            }
+        }
+
+        async function detectVideo() {
+            if (!currentVideoFile) {
+                showVideoError('Please select a video first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', currentVideoFile);
+
+            document.getElementById('detectVideoBtn').disabled = true;
+            document.getElementById('videoProgress').classList.add('show');
+            clearVideoError();
+            clearVideoSuccess();
+
+            try {
+                // backend does not support video uploads in demo mode
+                showVideoError('Video processing is not available in this demo.');
+            } catch (error) {
+                showVideoError('Error: ' + error.message);
+            } finally {
+                document.getElementById('videoProgress').classList.remove('show');
+                document.getElementById('detectVideoBtn').disabled = false;
+            }
+            }
+
+        function displayImageResults(data) {
+            document.getElementById('resultImage').src = data.image;
+            document.getElementById('totalDetections').textContent = data.total_detections;
+            document.getElementById('helmetCount').textContent = data.helmet_count;
+            document.getElementById('vestCount').textContent = data.vest_count;
+            document.getElementById('bootsCount').textContent = data.boots_count;
+            document.getElementById('avgConfidence').textContent = (data.avg_confidence * 100).toFixed(1) + '%';
+
+            // Display detections list
+            const detectionsList = document.getElementById('detectionsList');
+            detectionsList.innerHTML = '';
+            data.detections.forEach((det, idx) => {
+                const badge = `badge-${det.class}`;
+                const item = document.createElement('div');
+                item.className = 'detection-item';
+                item.innerHTML = `
+                    <span><span class="badge ${badge}">${det.class.toUpperCase()}</span></span>
+                    <span>Confidence: ${(det.confidence * 100).toFixed(1)}%</span>
+                `;
+                detectionsList.appendChild(item);
+            });
+
+            document.getElementById('imageResults').classList.add('show');
+        }
+
+        function displayVideoResults(data) {
+            document.getElementById('framesProcessed').textContent = data.frames_processed;
+            document.getElementById('videoTotalDetections').textContent = data.statistics.total_detections;
+            document.getElementById('videoHelmetCount').textContent = data.statistics.helmet_count;
+            document.getElementById('videoVestCount').textContent = data.statistics.vest_count;
+            document.getElementById('videoBootsCount').textContent = data.statistics.boots_count;
+            document.getElementById('videoAvgConfidence').textContent = (data.statistics.avg_confidence * 100).toFixed(1) + '%';
+
+            document.getElementById('videoResults').classList.add('show');
+        }
+
+        function downloadResult() {
+            if (currentImageOutput) {
+                window.location.href = `/api/download/${currentImageOutput}`;
+            }
+        }
+
+        function downloadVideo() {
+            if (currentVideoOutput) {
+                window.location.href = `/api/download/${currentVideoOutput}`;
+            }
+        }
+
+        function clearImage() {
+            currentImageFile = null;
+            imageFile.value = '';
+            document.getElementById('imageFileInfo').classList.remove('show');
+            clearImageError();
+            clearImageSuccess();
+            document.getElementById('imageResults').classList.remove('show');
+        }
+
+        function clearVideo() {
+            currentVideoFile = null;
+            videoFile.value = '';
+            document.getElementById('videoFileInfo').classList.remove('show');
+            clearVideoError();
+            clearVideoSuccess();
+            document.getElementById('videoResults').classList.remove('show');
+        }
+
+        function switchTab(tabName, btn) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+    if (btn) btn.classList.add('active');
+            // Load system info if info tab
+            if (tabName === 'info') {
+                loadSystemInfo();
+            }
+        }
+
+        async function loadSystemInfo() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+
+                document.getElementById('systemStatus').textContent = data.status.toUpperCase();
+                document.getElementById('systemDevice').textContent = data.device.toUpperCase();
+                document.getElementById('systemModel').textContent = data.model;
+                document.getElementById('systemClasses').innerHTML = data.classes
+                    .map(cls => `<span style="display: inline-block; margin: 5px; padding: 5px 10px; background: #667eea; color: white; border-radius: 4px;">${cls}</span>`)
+                    .join('');
+            } catch (error) {
+                console.error('Error loading system info:', error);
+            }
+        }
+
+        function showImageError(message) {
+            const errorDiv = document.getElementById('imageError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function clearImageError() {
+            document.getElementById('imageError').classList.remove('show');
+        }
+
+        function showImageSuccess(message) {
+            const successDiv = document.getElementById('imageSuccess');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+        }
+
+        function clearImageSuccess() {
+            document.getElementById('imageSuccess').classList.remove('show');
+        }
+
+        function showVideoError(message) {
+            const errorDiv = document.getElementById('videoError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        }
+
+        function clearVideoError() {
+            document.getElementById('videoError').classList.remove('show');
+        }
+
+        function showVideoSuccess(message) {
+            const successDiv = document.getElementById('videoSuccess');
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+        }
+
+        function clearVideoSuccess() {
+            document.getElementById('videoSuccess').classList.remove('show');
+        }
+
+        // Load system info on page load
+        window.addEventListener('load', () => {
+            loadSystemInfo();
+        });
+    </script>
+</body>
+</html>

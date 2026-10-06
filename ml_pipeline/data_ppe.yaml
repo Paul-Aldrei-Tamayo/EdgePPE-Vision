@@ -1,0 +1,17 @@
+# YOLOv8 PPE Detection Dataset Configuration
+# Course: CPE179P - AI on the Edge with Huawei Ascend and Atlas
+# Dataset: Pictor PPE / Roboflow Construction Site Safety Dataset (~5,000 images)
+
+path: ../datasets/ppe_dataset  # dataset root dir
+train: images/train
+val: images/val
+test: images/test
+
+# 6 Core Classes as specified in EdgePPE-Vision Proposal
+names:
+  0: Hard Hat
+  1: NO-Hard Hat
+  2: Safety Vest
+  3: NO-Safety Vest
+  4: Mask
+  5: NO-Mask

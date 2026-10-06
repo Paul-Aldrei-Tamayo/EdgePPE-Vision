@@ -1,0 +1,52 @@
+{
+  "classes": [
+    "Hard Hat",
+    "Mask",
+    "NO-Hard Hat",
+    "NO-Mask",
+    "NO-Safety Vest",
+    "Person",
+    "Safety Cone",
+    "Safety Vest",
+    "Machinery",
+    "Vehicle"
+  ],
+  "colors": {
+    "Hard Hat": [0, 255, 0],
+    "Hardhat": [0, 255, 0],
+    "Safety Vest": [0, 255, 128],
+    "Mask": [255, 255, 0],
+    "NO-Hard Hat": [0, 0, 255],
+    "NO-Hardhat": [0, 0, 255],
+    "NO-Safety Vest": [0, 0, 255],
+    "NO-Mask": [0, 0, 255],
+    "Person": [255, 200, 0],
+    "Safety Cone": [0, 165, 255],
+    "Machinery": [128, 128, 128],
+    "Vehicle": [128, 128, 128]
+  },
+  "mandatory_gear": [
+    "Hard Hat",
+    "Safety Vest"
+  ],
+  "violation_classes": [
+    "NO-Hard Hat",
+    "NO-Hardhat",
+    "NO-Safety Vest",
+    "NO-Mask"
+  ],
+  "aliases": {
+    "hardhat": "Hard Hat",
+    "no-hardhat": "NO-Hard Hat",
+    "helmet": "Hard Hat",
+    "no-helmet": "NO-Hard Hat",
+    "vest": "Safety Vest",
+    "safety-vest": "Safety Vest",
+    "no-safety-vest": "NO-Safety Vest",
+    "no-vest": "NO-Safety Vest",
+    "facemask": "Mask",
+    "face-mask": "Mask",
+    "no-facemask": "NO-Mask",
+    "no_mask": "NO-Mask"
+  }
+}

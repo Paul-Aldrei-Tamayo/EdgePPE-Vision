@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgePPE-Vision | Real-Time PPE Compliance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background-color: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .badge-quant {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            text-transform: uppercase;
+        }
+
+        .header-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-left: 1.25rem;
+            transition: color 0.2s;
+        }
+
+        .header-links a:hover {
+            color: var(--accent-blue);
+        }
+
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 1.5rem;
+            padding: 1.5rem 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            overflow: hidden;
+        }
+
+        .tab-bar {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-blue);
+        }
+
+        .viewer-container {
+            position: relative;
+            background: #020617;
+            border-radius: 8px;
+            min-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px dashed var(--border-color);
+        }
+
+        #preview-img, #camera-video {
+            max-width: 100%;
+            max-height: 540px;
+            object-fit: contain;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .status-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 0.6rem 1rem;
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+
+        .status-banner.compliant {
+            background: rgba(34, 197, 94, 0.92);
+            color: white;
+            display: block;
+        }
+
+        .status-banner.non-compliant {
+            background: rgba(239, 68, 68, 0.92);
+            color: white;
+            display: block;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--text-secondary);
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .metric-box {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-val {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .compliance-indicator {
+            padding: 1rem;
+            border-radius: 8px;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .indicator-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text-secondary);
+        }
+
+        .indicator-dot.active-green {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        .indicator-dot.active-red {
+            background: var(--accent-red);
+            box-shadow: 0 0 10px var(--accent-red);
+        }
+
+        .detection-list {
+            list-style: none;
+            max-height: 240px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+        }
+
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+        }
+
+        .tag-gear {
+            color: var(--accent-green);
+            font-weight: 600;
+        }
+
+        .tag-violation {
+            color: var(--accent-red);
+            font-weight: 600;
+        }
+
+        .drop-zone-text {
+            color: var(--text-secondary);
+            text-align: center;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-title">
+            <span>🛡️ EdgePPE-Vision</span>
+            <span class="badge-quant" id="badge-model">{{ model_type }}</span>
+        </div>
+        <div class="header-links">
+            <span style="font-size: 0.8rem; color: var(--text-secondary)">CPE179P Edge AI</span>
+            <a href="/docs" target="_blank">Swagger API</a>
+            <a href="/api/v1/health" target="_blank">Health</a>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Main Viewer Column -->
+        <div class="card">
+            <div class="tab-bar">
+                <button class="tab-btn active" id="tab-upload" onclick="switchTab('upload')">Upload Image</button>
+                <button class="tab-btn" id="tab-samples" onclick="switchTab('samples')">Sample Gallery</button>
+                <button class="tab-btn" id="tab-webcam" onclick="switchTab('webcam')">Live Webcam / Edge</button>
+            </div>
+
+            <div class="viewer-container" id="drop-zone">
+                <div id="status-banner" class="status-banner">STATUS: PENDING</div>
+                <div class="drop-zone-text" id="placeholder-text">
+                    <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.4rem;">Select or Drag & Drop PPE Image</p>
+                    <p style="font-size: 0.85rem;">Works with JPG, PNG, and camera snapshots</p>
+                </div>
+                <img id="preview-img" alt="Inference Output">
+                <video id="camera-video" autoplay playsinline muted></video>
+            </div>
+
+            <!-- Controls row -->
+            <div class="controls-row">
+                <input type="file" id="file-input" accept="image/*" style="display: none;">
+                <button class="btn" onclick="document.getElementById('file-input').click()">
+                    📁 Choose Image
+                </button>
+                <button class="btn btn-outline" id="btn-webcam-toggle" onclick="toggleWebcam()" style="display: none;">
+                    📹 Start Live Stream
+                </button>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                        <input type="checkbox" id="mask-enforce-check"> Enforce Masks
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <label for="conf-slider" style="font-size: 0.8rem; color: var(--text-secondary);">Confidence:</label>
+                        <input type="range" id="conf-slider" min="0.1" max="0.9" step="0.05" value="0.35" style="width: 100px;">
+                        <span id="conf-value" style="font-family: 'JetBrains Mono'; font-size: 0.8rem;">0.35</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample buttons (shown on samples tab) -->
+            <div id="samples-panel" style="display: none; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <p class="section-title">Test Sample Images</p>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-outline" onclick="loadSampleImage('/samples/images/building_workers_18.jpeg')">Workers 1</button>
+                    <button class="btn btn-outline" onclick="loadSampleImage('/samples/images/building_workers_24.jpeg')">Workers 2</button>
+                    <button class="btn btn-outline" onclick="loadSampleImage('/samples/images/safety.jpg')">Safety Inspection</button>
+                    <button class="btn btn-outline" onclick="loadSampleImage('/samples/images/safety_ppe.jpg')">PPE Gear Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Telemetry & Compliance Column -->
+        <div class="sidebar">
+            <!-- Compliance Status -->
+            <div class="card">
+                <p class="section-title">Compliance Decision Logic</p>
+                <div class="compliance-indicator">
+                    <div class="indicator-dot" id="dot-status"></div>
+                    <div>
+                        <div id="text-status" style="font-weight: 800; font-size: 1.05rem;">IDLE</div>
+                        <div id="text-summary" style="font-size: 0.8rem; color: var(--text-secondary);">Awaiting image input...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-Time Metrics -->
+            <div class="card">
+                <p class="section-title">Edge AI Telemetry</p>
+                <div class="metric-grid">
+                    <div class="metric-box">
+                        <div class="metric-label">ONNX Latency</div>
+                        <div class="metric-val" id="metric-latency">0.0 <span style="font-size: 0.8rem;">ms</span></div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Objects Found</div>
+                        <div class="metric-val" id="metric-count">0</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Active Graph</div>
+                        <div class="metric-val" id="metric-mode" style="font-size: 1.05rem;">INT8</div>
+                    </div>
+                    <div class="metric-box">
+                        <div class="metric-label">Client FPS</div>
+                        <div class="metric-val" id="metric-fps">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detection Breakdown -->
+            <div class="card" style="flex: 1;">
+                <p class="section-title">Detected Classes</p>
+                <ul class="detection-list" id="detection-list">
+                    <li style="color: var(--text-secondary); font-size: 0.85rem; padding: 0.5rem 0;">No detections yet</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const previewImg = document.getElementById('preview-img');
+        const cameraVideo = document.getElementById('camera-video');
+        const placeholder = document.getElementById('placeholder-text');
+        const statusBanner = document.getElementById('status-banner');
+        const dotStatus = document.getElementById('dot-status');
+        const textStatus = document.getElementById('text-status');
+        const textSummary = document.getElementById('text-summary');
+        const metricLatency = document.getElementById('metric-latency');
+        const metricCount = document.getElementById('metric-count');
+        const metricMode = document.getElementById('metric-mode');
+        const metricFps = document.getElementById('metric-fps');
+        const detectionList = document.getElementById('detection-list');
+        const confSlider = document.getElementById('conf-slider');
+        const confValue = document.getElementById('conf-value');
+
+        let isStreaming = false;
+        let streamInterval = null;
+
+        confSlider.oninput = () => {
+            confValue.innerText = confSlider.value;
+        };
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                processFile(e.target.files[0]);
+            }
+        });
+
+        // Drag and drop support
+        const dropZone = document.getElementById('drop-zone');
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#38bdf8'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#334155'; });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#334155';
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                processFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        async function processFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            const conf = confSlider.value;
+
+            const enforceMask = document.getElementById('mask-enforce-check').checked;
+            try {
+                const response = await fetch(`/api/v1/detect_visual?conf_threshold=${conf}&enforce_mask=${enforceMask}&return_base64=true`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                updateUI(data);
+            } catch (err) {
+                console.error(err);
+                alert("Error during inference request: " + err.message);
+            }
+        }
+
+        async function loadSampleImage(url) {
+            try {
+                const resp = await fetch(url);
+                const blob = await resp.blob();
+                const file = new File([blob], "sample.jpg", { type: "image/jpeg" });
+                processFile(file);
+            } catch (e) {
+                console.error("Failed to load sample image:", e);
+            }
+        }
+
+        function updateUI(data) {
+            placeholder.style.display = 'none';
+            cameraVideo.style.display = 'none';
+            previewImg.style.display = 'block';
+            previewImg.src = data.image_base64;
+
+            // Metrics
+            metricLatency.innerHTML = `${data.inference_time_ms} <span style="font-size:0.8rem">ms</span>`;
+            metricCount.innerText = data.total_detected;
+
+            // Compliance status
+            const isCompliant = data.status === "COMPLIANT";
+            statusBanner.className = `status-banner ${isCompliant ? 'compliant' : 'non-compliant'}`;
+            statusBanner.innerText = `STATUS: ${data.status}`;
+            statusBanner.style.display = 'block';
+
+            dotStatus.className = `indicator-dot ${isCompliant ? 'active-green' : 'active-red'}`;
+            textStatus.innerText = data.status;
+            textStatus.style.color = isCompliant ? 'var(--accent-green)' : 'var(--accent-red)';
+            textSummary.innerText = data.compliance_details ? data.compliance_details.summary : '';
+
+            // Detections
+            detectionList.innerHTML = '';
+            if (data.compliance_details && data.compliance_details.violations_detected.length > 0) {
+                data.compliance_details.violations_detected.forEach(v => {
+                    const li = document.createElement('li');
+                    li.className = 'detection-item';
+                    li.innerHTML = `<span class="tag-violation">⚠️ ${v}</span><span style="color:#ef4444">VIOLATION</span>`;
+                    detectionList.appendChild(li);
+                });
+            }
+
+            if (data.compliance_details && data.compliance_details.mandatory_present.length > 0) {
+                data.compliance_details.mandatory_present.forEach(g => {
+                    const li = document.createElement('li');
+                    li.className = 'detection-item';
+                    li.innerHTML = `<span class="tag-gear">✓ ${g}</span><span style="color:#22c55e">VERIFIED</span>`;
+                    detectionList.appendChild(li);
+                });
+            }
+
+            if (detectionList.children.length === 0) {
+                detectionList.innerHTML = '<li style="color:var(--text-secondary); font-size:0.85rem; padding:0.5rem 0;">No relevant items detected</li>';
+            }
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+
+            const samplesPanel = document.getElementById('samples-panel');
+            const webcamBtn = document.getElementById('btn-webcam-toggle');
+
+            samplesPanel.style.display = (tab === 'samples') ? 'block' : 'none';
+            webcamBtn.style.display = (tab === 'webcam') ? 'inline-flex' : 'none';
+
+            if (tab !== 'webcam' && isStreaming) {
+                toggleWebcam();
+            }
+        }
+
+        async function toggleWebcam() {
+            const btn = document.getElementById('btn-webcam-toggle');
+            if (isStreaming) {
+                // Stop webcam
+                clearInterval(streamInterval);
+                if (cameraVideo.srcObject) {
+                    cameraVideo.srcObject.getTracks().forEach(track => track.stop());
+                }
+                cameraVideo.style.display = 'none';
+                previewImg.style.display = 'block';
+                btn.innerText = '📹 Start Live Stream';
+                btn.classList.remove('btn-outline');
+                isStreaming = false;
+                metricFps.innerText = '--';
+            } else {
+                // Start webcam
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+                    cameraVideo.srcObject = stream;
+                    cameraVideo.style.display = 'block';
+                    previewImg.style.display = 'none';
+                    placeholder.style.display = 'none';
+                    btn.innerText = '⏹️ Stop Live Stream';
+                    btn.classList.add('btn-outline');
+                    isStreaming = true;
+
+                    // Stream frames periodically
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 640;
+                    canvas.height = 480;
+                    const ctx = canvas.getContext('2d');
+
+                    let lastTime = performance.now();
+                    streamInterval = setInterval(async () => {
+                        if (!isStreaming) return;
+                        ctx.drawImage(cameraVideo, 0, 0, 640, 480);
+                        canvas.toBlob(async (blob) => {
+                            if (!blob) return;
+                            const fd = new FormData();
+                            fd.append('file', blob, 'frame.jpg');
+                            const conf = confSlider.value;
+                            const enforceMask = document.getElementById('mask-enforce-check').checked;
+                            try {
+                                const resp = await fetch(`/api/v1/detect_visual?conf_threshold=${conf}&enforce_mask=${enforceMask}&return_base64=true`, {
+                                    method: 'POST',
+                                    body: fd
+                                });
+                                const data = await resp.json();
+                                updateUI(data);
+
+                                // FPS Calculation
+                                const now = performance.now();
+                                const fps = (1000 / (now - lastTime)).toFixed(1);
+                                lastTime = now;
+                                metricFps.innerText = fps;
+                            } catch (e) {
+                                console.error("Stream error", e);
+                            }
+                        }, 'image/jpeg', 0.7);
+                    }, 200); // 5 FPS capture rate matching Raspberry Pi edge target
+                } catch (err) {
+                    alert("Could not access camera: " + err.message);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

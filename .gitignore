@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Ultralytics & Runs
+runs/
+*.pt
+
+# Snapshots and temporary uploads
+snapshots/*.jpg
+backend_server/static/uploads/
+
+# Legacy project ignores
+PPE_detection_YOLO/__pycache__/
+PPE_detection_YOLO/venv/
+PPE_detection_YOLO/static/files/*.jpg
+PPE_detection_YOLO/static/files/*.mp4
